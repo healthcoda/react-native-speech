@@ -1,8 +1,11 @@
 #import "SpeechSynthesizer.h"
 #import "RCTUtils.h"
 #import "RCTLog.h"
+#import "RCTEventDispatcher.h"
 
 @implementation SpeechSynthesizer
+
+@synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE()
 
@@ -16,7 +19,7 @@ RCT_EXPORT_METHOD(speakUtterance:(NSDictionary *)args callback:(RCTResponseSende
 
     // Set args to variables
     NSString *text = args[@"text"];
-    NSString *voice = args[@"voice"];
+    NSString *voiceIdentifier = args[@"voiceIdentifier"];
     NSNumber *rate = args[@"rate"];
 
     // Error if no text is passed
@@ -25,22 +28,15 @@ RCT_EXPORT_METHOD(speakUtterance:(NSDictionary *)args callback:(RCTResponseSende
         return;
     }
 
-    // Set default voice
-    NSString *voiceLanguage;
-
-    // Set voice if provided
-    if (voice) {
-        voiceLanguage = voice;
-
-    // Fallback to en-US
-    } else {
-        voiceLanguage = @"en-US";
-    }
-
     // Setup utterance and voice
     AVSpeechUtterance *utterance = [[AVSpeechUtterance alloc] initWithString:text];
 
-    utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:voiceLanguage];
+    if (voiceIdentifier) {
+        utterance.voice = [AVSpeechSynthesisVoice voiceWithIdentifier:voiceIdentifier];
+    } else {
+        // Fallback to en-US
+        utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"en-US"];
+    }
 
     if (rate) {
       utterance.rate = [rate doubleValue];
@@ -105,8 +101,20 @@ RCT_EXPORT_METHOD(speechVoices:(RCTResponseSenderBlock)callback)
 {
     NSArray *speechVoices = [AVSpeechSynthesisVoice speechVoices];
     NSArray *locales = [speechVoices valueForKey:@"language"];
+    NSMutableDictionary *voices = [[NSMutableDictionary alloc] init];
+    for (AVSpeechSynthesisVoice *voice in speechVoices) {
+        NSMutableDictionary *voiceInfo = [[NSMutableDictionary alloc] init];
+        voiceInfo[@"name"] = voice.name;
+        voiceInfo[@"language"] = voice.language;
+        if (voice.quality == AVSpeechSynthesisVoiceQualityEnhanced) {
+            voiceInfo[@"quality"] = @"enhanced";
+        } else {
+            voiceInfo[@"quality"] = @"default";
+        }
+        voices[voice.identifier] = voiceInfo;
+    }
+    callback(@[[NSNull null], voices]);
 
-    callback(@[[NSNull null], locales]);
 }
 
 // Delegate
@@ -116,6 +124,7 @@ RCT_EXPORT_METHOD(speechVoices:(RCTResponseSenderBlock)callback)
 {
     NSLog(@"Speech finished");
     self.synthesizer = nil;
+    [self.bridge.eventDispatcher sendAppEventWithName:@"FinishSpeechUtterance" body:@{}];
 }
 
 // Started Handler
@@ -146,6 +155,7 @@ RCT_EXPORT_METHOD(speechVoices:(RCTResponseSenderBlock)callback)
 -(void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didCancelSpeechUtterance:(AVSpeechUtterance *)utterance
 {
     NSLog(@"Speech cancelled");
+    self.synthesizer = nil;
 }
 
 @end

@@ -65,12 +65,12 @@ var SpeechSynthesizer = {
 
   supportedVoices() {
     return new Promise(function(resolve, reject) {
-      NativeSpeechSynthesizer.speechVoices(function(error, locales) {
+      NativeSpeechSynthesizer.speechVoices(function(error, speechVoices) {
         if (error) {
           return reject(error);
         }
 
-        resolve(locales);
+        resolve(speechVoices);
       });
     });
   }
