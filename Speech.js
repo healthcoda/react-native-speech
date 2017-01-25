@@ -38,7 +38,6 @@ var TextToSpeech = {
 
   stop() {
     if (AndroidTTS) {
-      console.log("stop IsAndroid");
       return new Promise((resolve,reject) => {
         AndroidTTS.stop((error,result)=>{
           if (error) {
@@ -49,25 +48,22 @@ var TextToSpeech = {
         });
       });
     } else {
-      console.log("stop !IsAndroid");
       IOSNativeSpeechSynthesizer.stopSpeakingAtBoundary;
     }
   },
 
   pause() {
     if (AndroidTTS) {
-      console.log("pause IsAndroid");
+      // not implemented
     } else {
-      console.log("pause !IsAndroid");
       IOSNativeSpeechSynthesizer.pauseSpeakingAtBoundary;
     }
   },
 
   resume() {
     if (AndroidTTS) {
-      console.log("resume IsAndroid");
+      // not implemented
     } else {
-      console.log("resume !IsAndroid");
       IOSNativeSpeechSynthesizer.continueSpeakingAtBoundary;
     }
   },
