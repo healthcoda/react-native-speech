@@ -48,7 +48,7 @@ var TextToSpeech = {
         });
       });
     } else {
-      IOSNativeSpeechSynthesizer.stopSpeakingAtBoundary;
+      IOSNativeSpeechSynthesizer.stopSpeakingAtBoundary();
     }
   },
 
@@ -56,7 +56,7 @@ var TextToSpeech = {
     if (AndroidTTS) {
       // not implemented
     } else {
-      IOSNativeSpeechSynthesizer.pauseSpeakingAtBoundary;
+      IOSNativeSpeechSynthesizer.pauseSpeakingAtBoundary();
     }
   },
 
@@ -64,7 +64,7 @@ var TextToSpeech = {
     if (AndroidTTS) {
       // not implemented
     } else {
-      IOSNativeSpeechSynthesizer.continueSpeakingAtBoundary;
+      IOSNativeSpeechSynthesizer.continueSpeakingAtBoundary();
     }
   },
 
