@@ -30,7 +30,7 @@ var TextToSpeech = {
             return reject(error);
           }
 
-          resolve(true);
+          resolve(success);
         });
       }
     });
