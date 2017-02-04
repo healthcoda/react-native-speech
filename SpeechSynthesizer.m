@@ -49,7 +49,7 @@ RCT_EXPORT_METHOD(speakUtterance:(NSDictionary *)args callback:(RCTResponseSende
     [self.synthesizer speakUtterance:utterance];
 
     // Return that the speach has started
-    callback(@[[NSNull null], @true]);
+    callback(@[[NSNull null], @{@"id": [NSNumber numberWithInt:[utterance hash]]}]);
 }
 
 // Stops synthesizer
@@ -125,7 +125,9 @@ RCT_EXPORT_METHOD(speechVoices:(RCTResponseSenderBlock)callback)
 {
     NSLog(@"Speech finished");
     self.synthesizer = nil;
-    [self.bridge.eventDispatcher sendAppEventWithName:@"FinishSpeechUtterance" body:@{}];
+    [self.bridge.eventDispatcher
+        sendAppEventWithName:@"FinishSpeechUtterance"
+        body:@{@"id": [NSNumber numberWithInt:[utterance hash]]}];
 }
 
 // Started Handler
@@ -149,13 +151,16 @@ RCT_EXPORT_METHOD(speechVoices:(RCTResponseSenderBlock)callback)
 // Word Handler
 -(void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer willSpeakRangeOfSpeechString:(NSRange)characterRange utterance:(AVSpeechUtterance *)utterance
 {
-    NSLog(@"Started word");
+//    NSLog(@"Started word");
 }
 
 // Cancelled Handler
 -(void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer didCancelSpeechUtterance:(AVSpeechUtterance *)utterance
 {
     NSLog(@"Speech cancelled");
+    [self.bridge.eventDispatcher
+        sendAppEventWithName:@"CancelSpeechUtterance"
+        body:@{@"id": [NSNumber numberWithInt:[utterance hash]]}];
     self.synthesizer = nil;
 }
 
