@@ -139,7 +139,7 @@ public class RCTTextToSpeech extends ReactContextBaseJavaModule{
             @Override
             public void onDone(String utteranceId) {
                 WritableMap map = Arguments.createMap();
-                map.putString("utteranceId", utteranceId);
+                map.putString("id", utteranceId);
                 getReactApplicationContext().getJSModule(RCTDeviceEventEmitter.class)
                     .emit("FinishSpeechUtterance", map);
             }
@@ -147,7 +147,7 @@ public class RCTTextToSpeech extends ReactContextBaseJavaModule{
             @Override
             public void onError(String utteranceId) {
                 WritableMap map = Arguments.createMap();
-                map.putString("utteranceId", utteranceId);
+                map.putString("id", utteranceId);
                 getReactApplicationContext().getJSModule(RCTDeviceEventEmitter.class)
                     .emit("ErrorSpeechUtterance", map);
             }
@@ -155,7 +155,7 @@ public class RCTTextToSpeech extends ReactContextBaseJavaModule{
             @Override
             public void onStart(String utteranceId) {
                 WritableMap map = Arguments.createMap();
-                map.putString("utteranceId", utteranceId);
+                map.putString("id", utteranceId);
                 getReactApplicationContext().getJSModule(RCTDeviceEventEmitter.class)
                     .emit("StartSpeechUtterance", map);
             }
@@ -251,24 +251,27 @@ public class RCTTextToSpeech extends ReactContextBaseJavaModule{
                     if(pitch != null){
                         tts.setPitch(pitch);
                     }
-                    //TODO:: Need to give the callback
                     int speakResult = 0;
-                    if(Build.VERSION.SDK_INT >= 21) {
+                    String utteranceId = UUID.randomUUID().toString();
+                    if (Build.VERSION.SDK_INT >= 21) {
                         Bundle bundle = new Bundle();
                         bundle.putCharSequence(Engine.KEY_PARAM_UTTERANCE_ID, "");
-                        speakResult = tts.speak(text, TextToSpeech.QUEUE_FLUSH, bundle, UUID.randomUUID().toString());
+                        speakResult = tts.speak(text, TextToSpeech.QUEUE_FLUSH, bundle, utteranceId);
                     } else {
                         HashMap<String, String> map = new HashMap<String, String>();
-                        map.put(Engine.KEY_PARAM_UTTERANCE_ID, UUID.randomUUID().toString());
+                        map.put(Engine.KEY_PARAM_UTTERANCE_ID, utteranceId);
                         speakResult = tts.speak(text, TextToSpeech.QUEUE_FLUSH, map);
                     }
 
-                    if(speakResult < 0)
-                        throw new Exception("Speak failed, make sure that TTS service is installed on you device");
+                    if (speakResult < 0) {
+                      throw new Exception("Speak failed, make sure that TTS service is installed on you device");
+                    }
 
-                    callback.invoke(null,true);
+                    WritableMap resultMap = Arguments.createMap();
+                    resultMap.putString("id", utteranceId);
+                    callback.invoke(null, resultMap);
                 } catch (Exception e) {
-                    callback.invoke(ErrorUtils.getError(null,e.getMessage()),null);
+                    callback.invoke(ErrorUtils.getError(null,e.getMessage()), null);
                 }
             }
         }.execute();
