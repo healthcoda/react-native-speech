@@ -80,14 +80,18 @@ public class RCTTextToSpeech extends ReactContextBaseJavaModule{
             @Override
             protected void doInBackgroundGuarded(Void... params) {
                 try{
-                    if(tts == null){
+                    if (tts == null){
                         init();
                     }
                     WritableMap speechVoices = Arguments.createMap();
-                    Set<Voice> voices = tts.getVoices();
+
+                    Set<Voice> voices = null;
+                    if (Build.VERSION.SDK_INT >= 21) {
+                      voices = tts.getVoices();
+                    }
                     if (voices != null) {
                       Iterator<Voice> iterator = voices.iterator();
-                      while(iterator.hasNext()) {
+                      while (iterator.hasNext()) {
                         Voice voice = iterator.next();
                         WritableMap voiceInfo = Arguments.createMap();;
                         voiceInfo.putString("name", voice.getLocale().getDisplayName());
@@ -102,9 +106,9 @@ public class RCTTextToSpeech extends ReactContextBaseJavaModule{
                         speechVoices.putMap(voice.getName(), voiceInfo);
                       }
                     }
-                    callback.invoke(null,speechVoices);
+                    callback.invoke(null, speechVoices);
                 } catch (Exception e) {
-                    callback.invoke(ErrorUtils.getError(null,e.getMessage()),null);
+                  callback.invoke(ErrorUtils.getError(null, e.getMessage()), null);
                 }
             }
         }.execute();
@@ -230,7 +234,7 @@ public class RCTTextToSpeech extends ReactContextBaseJavaModule{
                 }
                 try {
                   tts.setSpeechRate((float)rate);
-                  if (voiceIdentifier != null && voiceIdentifier != "") {
+                  if (voiceIdentifier != null && voiceIdentifier != "" && Build.VERSION.SDK_INT >= 21) {
                     Set<Voice> voices = tts.getVoices();
                     if (voices != null) {
                       Iterator<Voice> iterator = tts.getVoices().iterator();
